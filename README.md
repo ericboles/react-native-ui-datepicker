@@ -331,6 +331,24 @@ The time zone can be set using either an [IANA time zone](https://en.wikipedia.o
 <DateTimePicker timeZone="Asia/Tokyo" /> //  Use Japan Standard Time (JST)
 ```
 
+Every date the picker reads or shows (calendar, header, time wheels) goes
+through `timeZone`. Two limits come from dayjs's timezone plugin:
+
+- **`UTC` is exact.** It uses dayjs's utc mode, which never touches the device's
+  clock.
+- **Zones with clock changes are approximate.** `dayjs.tz()` re-parses in the
+  device's zone, so a time in the device's own spring-forward hour reads an
+  hour later, and setting the hour keeps the offset of the starting date
+  across the zone's own change.
+
+For exact times in a zone with clock changes (say, an aircraft's home
+airport), pass "wall times" with `timeZone="UTC"`: a `Date` whose UTC fields
+read as that zone's clock. Convert to wall times before passing `date`,
+`minDate` and `maxDate`, and back to real instants in `onChange`.
+
+Only one `timeZone` is active at a time (it's set when a picker renders), so
+mount one picker at a time when they use different zones.
+
 ## Localization
 
 DateTimePicker offers multiple options to customize the calendar for different languages.

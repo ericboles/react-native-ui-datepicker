@@ -138,6 +138,7 @@ export interface DatePickerBaseProps {
   calendar?: CalendarType;
   locale?: string;
   numerals?: Numerals;
+  /** IANA zone or UTC offset the picker reads and shows dates in. "UTC" is exact; see README "Time Zones" for zones with clock changes. */
   timeZone?: string;
   date?: DateType;
   startDate?: DateType;

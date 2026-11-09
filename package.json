@@ -32,7 +32,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "test": "jest",
+    "test": "jest && TZ=Europe/London jest src/__tests__/timezone.test.tsx",
     "typecheck": "npx tsc --noEmit",
     "lint": "eslint .",
     "prepack": "bob build",
