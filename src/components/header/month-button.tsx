@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import dayjs from 'dayjs';
+import { zoned } from '../../utils';
 import { Pressable, Text, View } from 'react-native';
 import { useCalendarContext } from '../../calendar-context';
 import { isValidJalaliLocale } from '../../utils';
@@ -17,7 +17,7 @@ const MonthButton = () => {
     monthCaptionFormat,
   } = useCalendarContext();
 
-  const currentMonthText = dayjs(currentDate)
+  const currentMonthText = zoned(currentDate)
     .calendar(calendar)
     .locale(
       calendar === 'jalali' && !isValidJalaliLocale(locale) ? 'en' : locale

@@ -13,6 +13,35 @@ import { useRef } from 'react';
 import { isEqual } from 'lodash';
 import { numeralSystems } from './numerals';
 
+/**
+ * The zone dates are read in. Set by DateTimePicker from its timeZone prop;
+ * undefined means the device's zone (plain dayjs, the previous behavior).
+ */
+let activeTimeZone: string | undefined;
+
+export const setActiveTimeZone = (timeZone: string | undefined) => {
+  activeTimeZone = timeZone;
+};
+
+/**
+ * A dayjs whose fields (year, month, day, hour, minute) read in the picker's
+ * zone. Use this, not dayjs(date), anywhere a date's fields are read or shown.
+ */
+export const zoned = (date?: DateType) => {
+  if (!activeTimeZone) return dayjs(date);
+  const input = date === undefined || date === null ? undefined : date;
+  // UTC: dayjs's utc mode reads fields with getUTC*, never the device's clock.
+  // (dayjs.tz() formats then re-parses in the device zone, so it lands an
+  // hour off when the time falls in the device's own spring-forward gap.)
+  if (isUtc(activeTimeZone)) return dayjs.utc(input as any);
+  return input === undefined
+    ? dayjs().tz(activeTimeZone)
+    : dayjs.tz(input as any, activeTimeZone);
+};
+
+const isUtc = (timeZone: string) =>
+  /^(utc|etc\/utc|gmt|etc\/gmt|z)$/i.test(timeZone);
+
 export const CALENDAR_FORMAT = 'YYYY-MM-DD HH:mm';
 export const DATE_FORMAT = 'YYYY-MM-DD';
 export const YEAR_PAGE_SIZE = 12;
@@ -123,11 +152,11 @@ export const getWeekdays = (
 };
 
 export const getFormated = (date: DateType) =>
-  dayjs(date).format(CALENDAR_FORMAT);
+  zoned(date).format(CALENDAR_FORMAT);
 
-export const getDateMonth = (date: DateType) => dayjs(date).month();
+export const getDateMonth = (date: DateType) => zoned(date).month();
 
-export const getDateYear = (date: DateType) => dayjs(date).year();
+export const getDateYear = (date: DateType) => zoned(date).year();
 
 /**
  * Check if two dates are on the same day
@@ -142,8 +171,8 @@ export function areDatesOnSameDay(a: DateType, b: DateType) {
     return false;
   }
 
-  const date_a = dayjs(a).format(DATE_FORMAT);
-  const date_b = dayjs(b).format(DATE_FORMAT);
+  const date_a = zoned(a).format(DATE_FORMAT);
+  const date_b = zoned(b).format(DATE_FORMAT);
 
   return date_a === date_b;
 }
@@ -170,7 +199,7 @@ export function isDateBetween(
     return false;
   }
 
-  return dayjs(date) <= endDate && dayjs(date) >= startDate;
+  return zoned(date) <= endDate && zoned(date) >= startDate;
 }
 
 /**
@@ -195,10 +224,10 @@ export function isDateDisabled(
     disabledDates?: DateType[] | ((date: DateType) => boolean) | undefined;
   }
 ): boolean {
-  if (minDate && date.isBefore(dayjs(minDate).startOf('day'))) {
+  if (minDate && date.isBefore(zoned(minDate).startOf('day'))) {
     return true;
   }
-  if (maxDate && date.isAfter(dayjs(maxDate).endOf('day'))) {
+  if (maxDate && date.isAfter(zoned(maxDate).endOf('day'))) {
     return true;
   }
 
@@ -294,7 +323,7 @@ export function isMonthDisabled(
  * @returns formated date
  */
 export const getFormatedDate = (date: DateType, format: string) =>
-  dayjs(date).format(format);
+  zoned(date).format(format);
 
 /**
  * Get date
@@ -303,7 +332,7 @@ export const getFormatedDate = (date: DateType, format: string) =>
  *
  * @returns date
  */
-export const getDate = (date: DateType) => dayjs(date);
+export const getDate = (date: DateType) => zoned(date);
 
 /**
  * Get year range for display
@@ -362,10 +391,10 @@ export function getDaysInMonth(
   showOutsideDays: boolean | undefined,
   firstDayOfWeek: number
 ) {
-  const daysInCurrentMonth = dayjs(date).daysInMonth();
+  const daysInCurrentMonth = zoned(date).daysInMonth();
 
-  const prevMonthDays = dayjs(date).add(-1, 'month').daysInMonth();
-  const firstDay = dayjs(date).date(1 - firstDayOfWeek);
+  const prevMonthDays = zoned(date).add(-1, 'month').daysInMonth();
+  const firstDay = zoned(date).date(1 - firstDayOfWeek);
   const prevMonthOffset = firstDay.day() % 7;
   const daysInPrevMonth = showOutsideDays ? prevMonthOffset : 0;
   const monthDaysOffset = prevMonthOffset + daysInCurrentMonth;
@@ -411,7 +440,7 @@ export function getFirstDayOfMonth(
  * @returns start of day
  */
 export function getStartOfDay(date: DateType): DateType {
-  return dayjs(date).startOf('day');
+  return zoned(date).startOf('day');
 }
 
 /**
@@ -422,7 +451,7 @@ export function getStartOfDay(date: DateType): DateType {
  * @returns end of day
  */
 export function getEndOfDay(date: DateType): DateType {
-  return dayjs(date).endOf('day');
+  return zoned(date).endOf('day');
 }
 
 /**
@@ -433,7 +462,7 @@ export function getEndOfDay(date: DateType): DateType {
  * @returns unix timestamp
  */
 export function dateToUnix(date: DateType): number {
-  return dayjs(date).unix();
+  return zoned(date).unix();
 }
 
 /**
@@ -445,9 +474,9 @@ export function dateToUnix(date: DateType): number {
  */
 export function removeTime(
   date: DateType,
-  timeZone: string | undefined
+  _timeZone?: string // kept for API compatibility; zoned() reads the active zone
 ): DateType {
-  return date ? dayjs.tz(date, timeZone).startOf('day') : undefined;
+  return date ? zoned(date).startOf('day') : undefined;
 }
 
 /**
@@ -459,12 +488,12 @@ export function removeTime(
  */
 export const getParsedDate = (date: DateType) => {
   return {
-    year: dayjs(date).year(),
-    month: dayjs(date).month(),
-    hour: dayjs(date).hour(),
-    hour12: parseInt(dayjs(date).format('hh')),
-    minute: dayjs(date).minute(),
-    period: dayjs(date).format('A'),
+    year: zoned(date).year(),
+    month: zoned(date).month(),
+    hour: zoned(date).hour(),
+    hour12: parseInt(zoned(date).format('hh')),
+    minute: zoned(date).minute(),
+    period: zoned(date).format('A'),
   };
 };
 
@@ -499,7 +528,7 @@ export const getMonthDays = (
   daysInNextMonth: number,
   numerals: Numerals
 ): CalendarDay[] => {
-  const date = dayjs(datetime);
+  const date = zoned(datetime);
 
   const prevDays = showOutsideDays
     ? Array.from({ length: prevMonthOffset }, (_, index) => {
@@ -584,7 +613,7 @@ const generateCalendarDay = (
   firstDayOfWeek: number,
   numerals: Numerals
 ) => {
-  const startOfWeek = dayjs(date).startOf('week').add(firstDayOfWeek, 'day');
+  const startOfWeek = zoned(date).startOf('week').add(firstDayOfWeek, 'day');
 
   return {
     text: formatNumber(number, numerals),

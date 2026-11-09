@@ -1,5 +1,5 @@
 import React from 'react';
-import dayjs from 'dayjs';
+import { zoned } from '../../utils';
 import { useMemo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useCalendarContext } from '../../calendar-context';
@@ -39,13 +39,22 @@ export const TimeButton = () => {
         ? `${formatNumber(0, numerals)}${formatNumber(minute, numerals)}`
         : `${formatNumber(minute, numerals)}`;
     return `${hourLabel}:${minuteLabel} ${use12Hours ? period : ''}`.trim();
-  }, [hasDate, timeButtonPlaceholder, numerals, hour, hour12, minute, use12Hours, period]);
+  }, [
+    hasDate,
+    timeButtonPlaceholder,
+    numerals,
+    hour,
+    hour12,
+    minute,
+    use12Hours,
+    period,
+  ]);
 
   return (
     <Pressable
       onPress={() => setCalendarView(calendarView === 'time' ? 'day' : 'time')}
       accessibilityRole="button"
-      accessibilityLabel={dayjs(date || currentDate).format('HH:mm')}
+      accessibilityLabel={zoned(date || currentDate).format('HH:mm')}
     >
       <View style={styles?.time_selector} className={classNames?.time_selector}>
         <Text

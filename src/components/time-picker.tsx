@@ -13,7 +13,7 @@ import Wheel from './time-picker/wheel';
 import { CONTAINER_HEIGHT } from '../enums';
 import { getParsedDate, formatNumber } from '../utils';
 import { Numerals, PickerOption } from '../types';
-import dayjs from 'dayjs';
+import { zoned } from '../utils';
 import PeriodPicker from './time-picker/period-picker';
 
 export type Period = 'AM' | 'PM';
@@ -67,8 +67,8 @@ const TimePicker = () => {
       return { filteredHours: hours, filteredMinutes: minutes };
     }
 
-    const minDateTime = dayjs(minDate);
-    const currentDateTime = dayjs(date || currentDate);
+    const minDateTime = zoned(minDate);
+    const currentDateTime = zoned(date || currentDate);
 
     // Check if we're on the same day as minDate
     const isSameDay = currentDateTime.isSame(minDateTime, 'day');
@@ -196,7 +196,7 @@ const TimePicker = () => {
     if (!hourExists && filteredHours.length > 0) {
       const firstHour = filteredHours[0];
       if (!firstHour) return;
-      
+
       const firstAvailableHour = Number(firstHour.value);
       let hour24 = firstAvailableHour;
 
@@ -204,7 +204,7 @@ const TimePicker = () => {
         hour24 = firstAvailableHour + 12;
       }
 
-      const newDate = dayjs.tz(date, timeZone).hour(hour24);
+      const newDate = zoned(date).hour(hour24);
       onSelectDate(newDate);
       return;
     }
@@ -213,9 +213,9 @@ const TimePicker = () => {
     if (!minuteExists && filteredMinutes.length > 0) {
       const firstMinute = filteredMinutes[0];
       if (!firstMinute) return;
-      
+
       const firstAvailableMinute = Number(firstMinute.value);
-      const newDate = dayjs.tz(date, timeZone).minute(firstAvailableMinute);
+      const newDate = zoned(date).minute(firstAvailableMinute);
       onSelectDate(newDate);
     }
   }, [
@@ -243,7 +243,7 @@ const TimePicker = () => {
           hour24 = 0;
         }
       }
-      const newDate = dayjs.tz(date, timeZone).hour(hour24).minute(minute);
+      const newDate = zoned(date).hour(hour24).minute(minute);
       onSelectDate(newDate);
     },
     [date, onSelectDate, timeZone, use12Hours, period, minute]
@@ -251,7 +251,7 @@ const TimePicker = () => {
 
   const handleChangeMinute = useCallback(
     (value: number) => {
-      const newDate = dayjs.tz(date, timeZone).minute(value);
+      const newDate = zoned(date).minute(value);
       onSelectDate(newDate);
     },
     [date, onSelectDate, timeZone]
@@ -268,7 +268,7 @@ const TimePicker = () => {
         newHour = hour12;
       }
 
-      const newDate = dayjs.tz(date || currentDate, timeZone).hour(newHour);
+      const newDate = zoned(date || currentDate).hour(newHour);
       onSelectDate(newDate);
     },
     [date, currentDate, onSelectDate, timeZone, hour, hour12]

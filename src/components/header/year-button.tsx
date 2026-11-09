@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useCalendarContext } from '../../calendar-context';
 import { formatNumber, getDateYear, getYearRange } from '../../utils';
-import dayjs from 'dayjs';
+import { zoned } from '../../utils';
 
 const YearButton = () => {
   const {
@@ -30,7 +30,7 @@ const YearButton = () => {
       }}
       testID="btn-year"
       accessibilityRole="button"
-      accessibilityLabel={dayjs(currentDate).calendar(calendar).format('YYYY')}
+      accessibilityLabel={zoned(currentDate).calendar(calendar).format('YYYY')}
     >
       <View
         style={[defaultStyles.container, styles?.year_selector]}
@@ -43,7 +43,7 @@ const YearButton = () => {
           {calendarView === 'year'
             ? `${formatNumber(years[0] || 0, numerals)} - ${formatNumber(years[years.length - 1] || 0, numerals)}`
             : formatNumber(
-                parseInt(dayjs(currentDate).calendar(calendar).format('YYYY')),
+                parseInt(zoned(currentDate).calendar(calendar).format('YYYY')),
                 numerals
               )}
         </Text>

@@ -6,7 +6,7 @@ import {
   StyleSheet,
   useColorScheme,
 } from 'react-native';
-import dayjs from 'dayjs';
+import { zoned } from '../../utils';
 import { useCalendarContext } from '../../calendar-context';
 import { COLORS } from '../../theme';
 
@@ -69,7 +69,7 @@ export default function ViewToggle() {
               },
             ]}
           >
-            {dayjs(date).format('YYYY-MM-DD')}
+            {zoned(date).format('YYYY-MM-DD')}
           </Text>
         </Pressable>
 
@@ -97,7 +97,7 @@ export default function ViewToggle() {
                 },
               ]}
             >
-              {dayjs(date).format(use12Hours ? 'hh:mm A' : 'HH:mm')}
+              {zoned(date).format(use12Hours ? 'hh:mm A' : 'HH:mm')}
             </Text>
           </Pressable>
         )}
@@ -109,7 +109,7 @@ export default function ViewToggle() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',  // label left, buttonGroup right
+    justifyContent: 'space-between', // label left, buttonGroup right
     alignItems: 'center',
     paddingHorizontal: 0,
     paddingVertical: 6,
@@ -119,14 +119,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   buttonGroup: {
-    flexDirection: 'row',   // date and time side by side
+    flexDirection: 'row', // date and time side by side
     alignItems: 'center',
   },
   button: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
-    marginLeft: 8,           // space between date & time buttons
+    marginLeft: 8, // space between date & time buttons
   },
   buttonText: {
     fontSize: 14,

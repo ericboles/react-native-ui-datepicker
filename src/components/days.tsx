@@ -1,6 +1,7 @@
 import React, { useMemo, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import dayjs from 'dayjs';
+import { zoned } from '../utils';
 import { useCalendarContext } from '../calendar-context';
 import Day, { EmptyDay } from './day';
 import {
@@ -63,7 +64,7 @@ const Days = () => {
   );
 
   const daysGrid = useMemo(() => {
-    const today = dayjs().tz(timeZone);
+    const today = zoned();
     dayjs.tz.setDefault(timeZone);
 
     const {
@@ -117,8 +118,8 @@ const Days = () => {
         if (
           (isFirstDayOfMonth && selectedEndDay) ||
           (isLastDayOfMonth && selectedStartDay) ||
-          dayjs(startDate).format('DDMMYYYY') ===
-            dayjs(endDate).format('DDMMYYYY')
+          zoned(startDate).format('DDMMYYYY') ===
+            zoned(endDate).format('DDMMYYYY')
         ) {
           inRange = false;
         }
@@ -133,8 +134,8 @@ const Days = () => {
 
         // if the selected days in a row, implements range mode style to selected days
         if (multiRangeMode) {
-          const yesterday = dayjs(day.date).subtract(1, 'day');
-          const tomorrow = dayjs(day.date).add(1, 'day');
+          const yesterday = zoned(day.date).subtract(1, 'day');
+          const tomorrow = zoned(day.date).add(1, 'day');
 
           const yesterdaySelected = safeDates.some((d) =>
             areDatesOnSameDay(d, yesterday)

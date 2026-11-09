@@ -30,7 +30,7 @@ import type {
   MultiChange,
 } from './types';
 import Calendar from './components/calendar';
-import { useDeepCompareMemo } from './utils';
+import { useDeepCompareMemo, setActiveTimeZone, zoned } from './utils';
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -124,6 +124,7 @@ const DateTimePicker = (
   } = props;
 
   dayjs.tz.setDefault(timeZone);
+  setActiveTimeZone(timeZone);
   dayjs.calendar(calendar);
   dayjs.locale(locale);
 
@@ -146,7 +147,7 @@ const DateTimePicker = (
   );
 
   const initialState: LocalState = useMemo(() => {
-    let initialDate = dayjs().tz(timeZone);
+    let initialDate = zoned();
     // Round initial time up to nearest minute interval
     if (timePicker) {
       const currentMin = initialDate.minute();
@@ -162,19 +163,19 @@ const DateTimePicker = (
     }
 
     if (mode === 'single' && date) {
-      initialDate = dayjs(date);
+      initialDate = zoned(date);
     }
 
     if (mode === 'range' && startDate) {
-      initialDate = dayjs(startDate);
+      initialDate = zoned(startDate);
     }
 
     if (mode === 'multiple' && dates && dates.length > 0) {
-      initialDate = dayjs(dates[0]);
+      initialDate = zoned(dates[0]);
     }
 
     if (minDate && initialDate.isBefore(minDate)) {
-      initialDate = dayjs(minDate);
+      initialDate = zoned(minDate);
     }
 
     if (month !== undefined && month && month >= 0 && month <= 11) {
@@ -185,34 +186,34 @@ const DateTimePicker = (
       initialDate = initialDate.year(year);
     }
 
-    let _date = (date ? dayjs(date) : date) as DateType;
+    let _date = (date ? zoned(date) : date) as DateType;
 
     if (_date && maxDate && dayjs(_date).isAfter(maxDate)) {
-      _date = dayjs(maxDate);
+      _date = zoned(maxDate);
     }
 
     if (_date && minDate && dayjs(_date).isBefore(minDate)) {
-      _date = dayjs(minDate);
+      _date = zoned(minDate);
     }
 
-    let start = (startDate ? dayjs(startDate) : startDate) as DateType;
+    let start = (startDate ? zoned(startDate) : startDate) as DateType;
 
     if (start && maxDate && dayjs(start).isAfter(maxDate)) {
-      start = dayjs(maxDate);
+      start = zoned(maxDate);
     }
 
     if (start && minDate && dayjs(start).isBefore(minDate)) {
-      start = dayjs(minDate);
+      start = zoned(minDate);
     }
 
-    let end = (endDate ? dayjs(endDate) : endDate) as DateType;
+    let end = (endDate ? zoned(endDate) : endDate) as DateType;
 
     if (end && maxDate && dayjs(end).isAfter(maxDate)) {
-      end = dayjs(maxDate);
+      end = zoned(maxDate);
     }
 
     if (end && minDate && dayjs(end).isBefore(minDate)) {
-      end = dayjs(minDate);
+      end = zoned(minDate);
     }
 
     return {
@@ -307,7 +308,7 @@ const DateTimePicker = (
 
   useEffect(() => {
     if (prevTimezone !== timeZone) {
-      const newDate = dayjs().tz(timeZone);
+      const newDate = zoned();
       dispatch({
         type: CalendarActionKind.CHANGE_CURRENT_DATE,
         payload: newDate,
@@ -326,13 +327,13 @@ useEffect(() => {
     let _date =
       (date &&
         (timePicker
-          ? dayjs.tz(date, timeZone)
-          : getStartOfDay(dayjs.tz(date, timeZone)))) ??
+          ? zoned(date)
+          : getStartOfDay(zoned(date)))) ??
       date;
 
     // Round selected date up to next minute interval if timePicker
     if (timePicker && _date) {
-      const tzDate = dayjs.tz(_date, timeZone);
+      const tzDate = zoned(_date);
       const currentMin = tzDate.minute();
       const rem = currentMin % minuteInterval;
       if (rem !== 0) {
@@ -347,12 +348,12 @@ useEffect(() => {
       }
     }
 
-      if (_date && maxDate && dayjs.tz(_date, timeZone).isAfter(maxDate)) {
-        _date = dayjs.tz(maxDate, timeZone);
+      if (_date && maxDate && zoned(_date).isAfter(maxDate)) {
+        _date = zoned(maxDate);
       }
 
-      if (_date && minDate && dayjs.tz(_date, timeZone).isBefore(minDate)) {
-        _date = dayjs.tz(minDate, timeZone);
+      if (_date && minDate && zoned(_date).isBefore(minDate)) {
+        _date = zoned(minDate);
       }
 
       dispatch({
@@ -367,25 +368,25 @@ useEffect(() => {
       }
     } else if (mode === 'range') {
       let start = (
-        startDate ? dayjs.tz(startDate, timeZone) : startDate
+        startDate ? zoned(startDate) : startDate
       ) as DateType;
 
-      if (start && maxDate && dayjs.tz(start, timeZone).isAfter(maxDate)) {
-        start = dayjs.tz(maxDate, timeZone);
+      if (start && maxDate && zoned(start).isAfter(maxDate)) {
+        start = zoned(maxDate);
       }
 
-      if (start && minDate && dayjs.tz(start, timeZone).isBefore(minDate)) {
-        start = dayjs.tz(minDate, timeZone);
+      if (start && minDate && zoned(start).isBefore(minDate)) {
+        start = zoned(minDate);
       }
 
-      let end = (endDate ? dayjs.tz(endDate, timeZone) : endDate) as DateType;
+      let end = (endDate ? zoned(endDate) : endDate) as DateType;
 
-      if (end && maxDate && dayjs.tz(end, timeZone).isAfter(maxDate)) {
-        end = dayjs.tz(maxDate, timeZone);
+      if (end && maxDate && zoned(end).isAfter(maxDate)) {
+        end = zoned(maxDate);
       }
 
-      if (end && minDate && dayjs.tz(end, timeZone).isBefore(minDate)) {
-        end = dayjs.tz(minDate, timeZone);
+      if (end && minDate && zoned(end).isBefore(minDate)) {
+        end = zoned(minDate);
       }
 
       dispatch({
@@ -404,7 +405,7 @@ useEffect(() => {
       }
     } else if (mode === 'multiple') {
       const _dates = dates?.map((date) =>
-        dayjs(date).tz(timeZone)
+        zoned(date)
       ) as DateType[];
 
       dispatch({
@@ -446,8 +447,8 @@ useEffect(() => {
       if (onChange) {
         if (mode === 'single') {
           let newDate = timePicker
-            ? dayjs.tz(selectedDate, timeZone)
-            : dayjs.tz(getStartOfDay(selectedDate), timeZone);
+            ? zoned(selectedDate)
+            : zoned(getStartOfDay(selectedDate));
           // Round newDate up to nearest minute interval if using timePicker
           if (timePicker) {
             const currentMin = newDate.minute();
@@ -540,18 +541,18 @@ useEffect(() => {
               startDate: isStart
                 ? dayjs(selected).toDate()
                 : start
-                  ? dayjs.tz(start).toDate()
+                  ? zoned(start).toDate()
                   : start,
               endDate: !isStart
-                ? dayjs.tz(getEndOfDay(selected), timeZone).toDate()
+                ? zoned(getEndOfDay(selected)).toDate()
                 : end
-                  ? dayjs.tz(getEndOfDay(end), timeZone).toDate()
+                  ? zoned(getEndOfDay(end)).toDate()
                   : end,
             });
           }
         } else if (mode === 'multiple') {
           const safeDates = (stateRef.current.dates as DateType[]) || [];
-          const newDate = dayjs(selectedDate, timeZone).startOf('day');
+          const newDate = zoned(selectedDate).startOf('day');
 
           const exists = safeDates.some((ed) => areDatesOnSameDay(ed, newDate));
 
@@ -566,7 +567,7 @@ useEffect(() => {
           newDates.sort((a, b) => (dayjs(a).isAfter(dayjs(b)) ? 1 : -1));
 
           const _dates = newDates.map((date) =>
-            dayjs(date).tz(timeZone)
+            zoned(date)
           ) as DateType[];
 
           (onChange as MultiChange)({
@@ -583,8 +584,8 @@ useEffect(() => {
   // set the active displayed month
   const onSelectMonth = useCallback(
     (value: number) => {
-      const currentMonth = dayjs(stateRef.current.currentDate).month();
-      const newDate = dayjs(stateRef.current.currentDate).month(value);
+      const currentMonth = zoned(stateRef.current.currentDate).month();
+      const newDate = zoned(stateRef.current.currentDate).month(value);
 
       // Only call onMonthChange if the month actually changed
       if (value !== currentMonth) {
@@ -603,8 +604,8 @@ useEffect(() => {
   // set the active displayed year
   const onSelectYear = useCallback(
     (value: number) => {
-      const currentYear = dayjs(stateRef.current.currentDate).year();
-      const newDate = dayjs(stateRef.current.currentDate).year(value);
+      const currentYear = zoned(stateRef.current.currentDate).year();
+      const newDate = zoned(stateRef.current.currentDate).year(value);
 
       // Only call onYearChange if the year actually changed
       if (value !== currentYear) {
@@ -634,10 +635,10 @@ useEffect(() => {
 
   const onChangeMonth = useCallback(
     (value: number) => {
-      const newDate = dayjs(stateRef.current.currentDate).add(value, 'month');
+      const newDate = zoned(stateRef.current.currentDate).add(value, 'month');
       dispatch({
         type: CalendarActionKind.CHANGE_CURRENT_DATE,
-        payload: dayjs(newDate),
+        payload: zoned(newDate),
       });
     },
     [stateRef, dispatch]
